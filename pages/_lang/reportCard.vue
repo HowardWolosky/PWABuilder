@@ -13,9 +13,9 @@
     <ion-toast-controller></ion-toast-controller>
 
     <div v-if="gotURL" id="reportShareButtonContainer">
-      <button @click="shareReport">
+      <button v-if="shareText" @click="shareReport">
         <i class="fas fa-share-alt"></i>
-        Share your Results
+        {{this.shareText}}
       </button>
     </div>
 
@@ -187,6 +187,8 @@ export default class extends Vue {
   public cleanedURL: string | null = null;
   public shared: boolean = false;
 
+  public shareText: string | null = null;
+
   public async created() {
     this.url$ = this.url;
 
@@ -244,6 +246,16 @@ export default class extends Vue {
     };
 
     awa.ct.capturePageView(overrideValues);
+
+    if ((navigator as any).share) {
+      this.shareText = "Share your Results";
+    }
+    else if (navigator.clipboard) {
+      this.shareText = "Copy for Sharing";
+    }
+    else {
+      this.shareText = "Share your Results";
+    }
   }
 
   public async shareReport() {
@@ -265,7 +277,7 @@ export default class extends Vue {
         console.error("trouble sharing with the web share api", err);
       }
     } else {
-      if ((navigator as any).clipboard) {
+      if (navigator.clipboard) {
         try {
           await (navigator as any).clipboard.writeText(
             `${location.href}?url=${this.url}`
